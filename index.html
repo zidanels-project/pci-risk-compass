@@ -113,15 +113,28 @@
   .sitemap-zones { position: absolute; inset: 0; }
   .sitemap-zone {
     position: absolute; border-radius: 4px; cursor: pointer;
-    border: 1.5px solid rgba(255,255,255,0.65); transition: opacity .12s ease, outline .12s ease;
-    outline: 0 solid transparent;
+    border-width: 2px; border-style: solid; transition: opacity .12s ease, outline .12s ease;
+    outline: 0 solid transparent; display: flex; align-items: center; justify-content: center;
   }
-  .sitemap-zone:hover { outline: 2px solid var(--text-primary); z-index: 2; }
+  .sitemap-zone.zone-good { background: rgba(12,163,12,0.38); border-color: var(--good); }
+  .sitemap-zone.zone-warning { background: rgba(250,178,25,0.42); border-color: var(--warning); }
+  .sitemap-zone.zone-serious { background: rgba(236,131,90,0.48); border-color: var(--serious); }
+  .sitemap-zone.zone-critical { background: rgba(208,59,59,0.48); border-color: var(--critical); }
+  :root:not([data-theme="light"]) .sitemap-zone.zone-good { background: rgba(12,163,12,0.45); }
+  :root:not([data-theme="light"]) .sitemap-zone.zone-warning { background: rgba(250,178,25,0.48); }
+  :root:not([data-theme="light"]) .sitemap-zone.zone-serious { background: rgba(236,131,90,0.5); }
+  :root:not([data-theme="light"]) .sitemap-zone.zone-critical { background: rgba(230,103,103,0.5); }
+  .sitemap-zone:hover { outline: 2px solid var(--text-primary); z-index: 2; filter: brightness(1.08); }
   .sitemap-zone.is-active { outline: 3px solid var(--accent); z-index: 3; }
+  .sitemap-zone-badge {
+    font: 800 12px "IBM Plex Mono", monospace; color: var(--text-primary); background: rgba(255,255,255,0.88);
+    border-radius: 999px; padding: 1px 7px; pointer-events: none; box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  }
+  .legend-caption { display: block; width: 100%; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
   .sitemap-zone-label {
     position: absolute; bottom: 100%; left: 0; margin-bottom: 3px; white-space: nowrap;
     font: 700 10px "IBM Plex Sans", sans-serif; background: var(--text-primary); color: var(--bg);
-    padding: 2px 6px; border-radius: 4px; opacity: 0; pointer-events: none; transition: opacity .12s ease;
+    padding: 2px 6px; border-radius: 4px; opacity: 0; pointer-events: none; transition: opacity .12s ease; z-index: 4;
   }
   .sitemap-zone:hover .sitemap-zone-label, .sitemap-zone.is-active .sitemap-zone-label { opacity: 1; }
   .sitemap-panel {
@@ -282,7 +295,8 @@
   #searchBox:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   #activeFilterPill { background: var(--accent); color: var(--accent-ink); cursor: pointer; }
   #activeFilterPill::after { content: " ✕"; }
-  .table-scroll { max-height: 480px; overflow: auto; border: 1px solid var(--border); border-radius: 10px; }
+  .table-scroll { max-height: 480px; overflow: auto; border: 1px solid var(--border); border-radius: 10px; transition: box-shadow .3s ease, border-color .3s ease; }
+  .table-scroll.flash-highlight { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent); }
   #drillTable { min-width: 760px; }
   #drillTable thead th {
     position: sticky; top: 0; background: var(--surface-2); text-align: left; font-size: 10.5px;
@@ -438,7 +452,7 @@
       <h2>Monthly exposure trend</h2>
       <p class="hint">Severity-weighted exposure per month (bars) vs. its 3-month rolling average (line) — smooths month-to-month noise so a real shift in direction stands out.</p>
     </div>
-    <svg id="monthlySvg" class="chart-svg" viewBox="0 0 800 300"></svg>
+    <svg id="monthlySvg" class="chart-svg" viewBox="0 0 800 340"></svg>
     <div class="legend">
       <span class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span>Monthly severity index</span>
       <span class="legend-item"><span class="legend-swatch-line"></span>3-month rolling average</span>
@@ -676,7 +690,7 @@
       });
       c.addEventListener('mousemove', function(ev){ tooltip.style.left = ev.clientX+'px'; tooltip.style.top = ev.clientY+'px'; });
       c.addEventListener('mouseleave', hideTooltip);
-      c.addEventListener('click', function(){ setFamilyFilter(r.family); });
+      c.addEventListener('click', function(){ setFamilyFilter(r.family); scrollToRegister(); });
       g.appendChild(c);
       var lbl = svgEl('text', {class:'bubble-label', x:cx, y: cy - rad - 6, 'text-anchor':'middle'});
       lbl.textContent = shortName(r.family);
@@ -711,7 +725,7 @@
       tr.appendChild(el('td', {class:'num'}, r.repeat_rate+'%'));
       tr.appendChild(el('td', {class:'num'}, String(r.open_actions)));
       tr.appendChild(el('td', {class:'rec-text'}, recommend(r)));
-      tr.addEventListener('click', function(){ setFamilyFilter(r.family); });
+      tr.addEventListener('click', function(){ setFamilyFilter(r.family); scrollToRegister(); });
       tbody.appendChild(tr);
       rankRowNodes[r.family] = tr;
     });
@@ -813,7 +827,7 @@
       var rInc = svgEl('rect', {class:'bar-rect', x:m.l, y:by, width:wInc, height: barH*0.46, rx:2, fill:'var(--accent)'});
       var rHaz = svgEl('rect', {class:'bar-rect', x:m.l, y:by+barH*0.54, width:wHaz, height: barH*0.46, rx:2, fill:'var(--accent-2)'});
       [rInc, rHaz].forEach(function(rect, idx){
-        rect.addEventListener('click', function(){ setWorkstationFilter(d.workstation); });
+        rect.addEventListener('click', function(){ setWorkstationFilter(d.workstation); scrollToRegister(); });
         rect.addEventListener('mouseenter', function(ev){
           showTooltip(ev.clientX, ev.clientY,
             '<b>'+esc(d.workstation)+'</b>' +
@@ -1044,16 +1058,17 @@
       var total = z.incidents + z.hazards;
       var color = siteZoneColor(total, maxTotal);
       var els = [];
-      z.rects.forEach(function(r){
-        var el2 = el('div', {class:'sitemap-zone'});
+      z.rects.forEach(function(r, ri){
+        var el2 = el('div', {class:'sitemap-zone zone-'+color});
         el2.style.left = r.x_pct + '%';
         el2.style.top = r.y_pct + '%';
         el2.style.width = r.w_pct + '%';
         el2.style.height = r.h_pct + '%';
-        el2.style.background = 'var(--' + color + '-soft)';
-        el2.style.borderColor = 'var(--' + color + ')';
         var lbl = el('div', {class:'sitemap-zone-label'}, z.label + ' — ' + total);
         el2.appendChild(lbl);
+        if (ri === 0){
+          el2.appendChild(el('div', {class:'sitemap-zone-badge'}, String(total)));
+        }
         el2.addEventListener('click', function(){ selectSiteZone(key); });
         wrap.appendChild(el2);
         els.push(el2);
@@ -1063,7 +1078,8 @@
 
     var legend = document.getElementById('sitemapLegend');
     legend.innerHTML = '';
-    [['good','Low activity'],['warning','Moderate'],['serious','High'],['critical','Very high']].forEach(function(p){
+    legend.appendChild(el('span', {class:'legend-caption'}, 'Combined incident + hazard-report count, relative to the busiest area:'));
+    [['good','Low (< 15% of busiest)'],['warning','Moderate (15–39%)'],['serious','High (40–65%)'],['critical','Very high (66%+)']].forEach(function(p){
       var item = el('span', {class:'legend-item'});
       var dot = el('span', {class:'legend-dot'});
       dot.style.background = 'var(--'+p[0]+')';
@@ -1134,9 +1150,19 @@
   }
 
   // ============= priority risk portfolio (hazard-event granularity) =============
+  function scrollToRegister(){
+    var target = document.querySelector('.table-scroll');
+    if (!target) return;
+    target.scrollIntoView({behavior:'smooth', block:'center'});
+    target.classList.add('flash-highlight');
+    setTimeout(function(){ target.classList.remove('flash-highlight'); }, 1200);
+  }
+
+  var portfolioRowNodes = {};
   function renderPortfolio(){
     var tbody = document.querySelector('#portfolioTable tbody');
     tbody.innerHTML = '';
+    portfolioRowNodes = {};
     var statusMap = {Confirmed:'critical', Emerging:'warning', Monitor:'muted'};
     DATA.hazard_event_portfolio.forEach(function(r){
       var tr = el('tr', {});
@@ -1154,7 +1180,8 @@
       stTd.appendChild(el('span', {class:'pill pill-'+(statusMap[r.status]||'muted')}, r.status));
       tr.appendChild(stTd);
       if (r.event !== 'Other (combined)'){
-        tr.addEventListener('click', function(){ setEventFilter(r.event); });
+        tr.addEventListener('click', function(){ setEventFilter(r.event); scrollToRegister(); });
+        portfolioRowNodes[r.event] = tr;
       }
       tbody.appendChild(tr);
     });
@@ -1190,31 +1217,43 @@
   }
 
   // ============= monthly exposure trend (bars + rolling average line) =============
+  var MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function monthLabel(mk){
+    var parts = mk.split('-');
+    var yy = parts[0].slice(2);
+    var mi = parseInt(parts[1], 10) - 1;
+    return MONTH_ABBR[mi] + " '" + yy;
+  }
   function renderMonthly(){
     var svg = document.getElementById('monthlySvg');
     svg.innerHTML = '';
     var data = DATA.monthly_trend;
-    var W = 800, H = 300, m = {l:38, r:16, t:16, b:34};
+    var W = 800, H = 340, m = {l:44, r:20, t:24, b:44};
     var plotW = W-m.l-m.r, plotH = H-m.t-m.b;
-    var maxV = Math.max.apply(null, data.map(function(d){return Math.max(d.severity_index, d.rolling_avg_3mo);})) * 1.15 || 1;
+    var maxV = Math.max.apply(null, data.map(function(d){return Math.max(d.severity_index, d.rolling_avg_3mo);})) * 1.2 || 1;
     var colW = plotW/data.length;
+
+    var yAxisTitle = svgEl('text', {class:'axis-label', x:0, y:0, 'text-anchor':'middle', transform:'translate(14,'+(m.t+plotH/2)+') rotate(-90)'});
+    yAxisTitle.textContent = 'Severity index (monthly)';
+    svg.appendChild(yAxisTitle);
+
     for (var i=0;i<=4;i++){
       var gy = m.t + plotH - (plotH*i/4);
       svg.appendChild(svgEl('line', {class:'grid-line', x1:m.l, x2:m.l+plotW, y1:gy, y2:gy}));
-      var tl = svgEl('text', {class:'tick-label', x:m.l-6, y:gy+3, 'text-anchor':'end'});
+      var tl = svgEl('text', {class:'tick-label', x:m.l-8, y:gy+3, 'text-anchor':'end'});
       tl.textContent = Math.round(maxV*i/4*10)/10;
       svg.appendChild(tl);
     }
     var pathPts = [];
     data.forEach(function(d, i){
-      var x = m.l + i*colW + colW*0.2;
-      var barW = colW*0.6;
+      var x = m.l + i*colW + colW*0.22;
+      var barW = colW*0.56;
       var h = (d.severity_index/maxV)*plotH;
       var y = m.t + plotH - h;
-      var rect = svgEl('rect', {x:x, y:y, width:barW, height:h, rx:2, fill:'var(--accent)', 'fill-opacity':'0.85'});
+      var rect = svgEl('rect', {x:x, y:y, width:barW, height:Math.max(h,1), rx:2, fill:'var(--accent)', 'fill-opacity':'0.85'});
       rect.addEventListener('mouseenter', function(ev){
         showTooltip(ev.clientX, ev.clientY,
-          '<b>'+d.month+'</b>' +
+          '<b>'+monthLabel(d.month)+'</b>' +
           '<div class="tt-row"><span>Severity index</span><span>'+d.severity_index+'</span></div>' +
           '<div class="tt-row"><span>3-mo rolling avg</span><span>'+d.rolling_avg_3mo+'</span></div>' +
           '<div class="tt-row"><span>Incidents</span><span>'+d.incidents+'</span></div>' +
@@ -1226,16 +1265,18 @@
       svg.appendChild(rect);
       var mx = m.l + i*colW + colW/2;
       var my = m.t + plotH - (d.rolling_avg_3mo/maxV)*plotH;
-      pathPts.push(mx+','+my);
-      var xl = svgEl('text', {class:'cat-label', x:x+barW/2, y:H-10, 'text-anchor':'middle'});
-      xl.textContent = d.month.slice(5);
+      pathPts.push([mx,my]);
+      var xl = svgEl('text', {class:'cat-label', x:x+barW/2, y:H-14, 'text-anchor':'middle'});
+      xl.textContent = monthLabel(d.month);
       svg.appendChild(xl);
     });
-    var path = svgEl('path', {d:'M'+pathPts.join(' L'), fill:'none', stroke:'var(--critical)', 'stroke-width':'2.5', 'stroke-linejoin':'round'});
+    var pathStr = 'M' + pathPts.map(function(p){ return p[0]+','+p[1]; }).join(' L');
+    var haloPath = svgEl('path', {d:pathStr, fill:'none', stroke:'var(--surface)', 'stroke-width':'5.5', 'stroke-linejoin':'round', 'stroke-linecap':'round'});
+    svg.appendChild(haloPath);
+    var path = svgEl('path', {d:pathStr, fill:'none', stroke:'var(--critical)', 'stroke-width':'2.75', 'stroke-linejoin':'round', 'stroke-linecap':'round'});
     svg.appendChild(path);
     pathPts.forEach(function(p){
-      var xy = p.split(',');
-      svg.appendChild(svgEl('circle', {cx:xy[0], cy:xy[1], r:3, fill:'var(--critical)'}));
+      svg.appendChild(svgEl('circle', {cx:p[0], cy:p[1], r:4.5, fill:'var(--surface)', stroke:'var(--critical)', 'stroke-width':'2.25'}));
     });
   }
 
@@ -1377,12 +1418,16 @@
   }
   function setEventFilter(evt){
     state.event = (state.event === evt) ? null : evt;
+    Object.keys(portfolioRowNodes).forEach(function(k){
+      portfolioRowNodes[k].classList.toggle('is-active', k === state.event);
+    });
     updateFilterPill();
     renderDrillBody();
   }
   function clearFilters(){
     state.family = null; state.workstation = null; state.event = null;
     updateMatrixHighlight(); updateFilterPill(); renderDrillBody();
+    Object.keys(portfolioRowNodes).forEach(function(k){ portfolioRowNodes[k].classList.remove('is-active'); });
   }
 
   document.getElementById('resetFilters').addEventListener('click', clearFilters);
