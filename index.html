@@ -7,8 +7,9 @@
     --bg:#f9f9f7; --surface:#fcfcfb; --surface-2:#f1f0ea; --surface-3:#e9e8e1;
     --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#898781;
     --border:rgba(11,11,11,0.10); --grid:#e1e0d9; --axis:#c3c2b7;
-    --accent:#2a78d6; --accent-ink:#ffffff; --accent-2:#eb6834;
-    --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a; --series-4:#eda100; --series-5:#e87ba4;
+    --accent:#0093FF; --accent-ink:#0b0b0b; --accent-2:#00D160;
+    --brand-blue:#0093FF; --brand-green:#00D160;
+    --series-1:#0093FF; --series-2:#eb6834; --series-3:#1baf7a; --series-4:#eda100; --series-5:#e87ba4;
     --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
     --good-soft:rgba(12,163,12,0.13); --warning-soft:rgba(250,178,25,0.16);
     --serious-soft:rgba(236,131,90,0.15); --critical-soft:rgba(208,59,59,0.13);
@@ -20,8 +21,9 @@
       --bg:#0d0d0d; --surface:#1a1a19; --surface-2:#222221; --surface-3:#2a2a28;
       --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#898781;
       --border:rgba(255,255,255,0.10); --grid:#2c2c2a; --axis:#383835;
-      --accent:#3987e5; --accent-ink:#0b0b0b; --accent-2:#d95926;
-      --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70; --series-4:#c98500; --series-5:#d55181;
+      --accent:#1C88E8; --accent-ink:#0b0b0b; --accent-2:#00A651;
+      --brand-blue:#1C88E8; --brand-green:#00A651;
+      --series-1:#1C88E8; --series-2:#d95926; --series-3:#199e70; --series-4:#c98500; --series-5:#d55181;
       --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#e66767;
       --good-soft:rgba(12,163,12,0.20); --warning-soft:rgba(250,178,25,0.16);
       --serious-soft:rgba(236,131,90,0.18); --critical-soft:rgba(230,103,103,0.18);
@@ -33,8 +35,9 @@
     --bg:#0d0d0d; --surface:#1a1a19; --surface-2:#222221; --surface-3:#2a2a28;
     --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#898781;
     --border:rgba(255,255,255,0.10); --grid:#2c2c2a; --axis:#383835;
-    --accent:#3987e5; --accent-ink:#0b0b0b; --accent-2:#d95926;
-    --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70; --series-4:#c98500; --series-5:#d55181;
+    --accent:#1C88E8; --accent-ink:#0b0b0b; --accent-2:#00A651;
+    --brand-blue:#1C88E8; --brand-green:#00A651;
+    --series-1:#1C88E8; --series-2:#d95926; --series-3:#199e70; --series-4:#c98500; --series-5:#d55181;
     --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#e66767;
     --good-soft:rgba(12,163,12,0.20); --warning-soft:rgba(250,178,25,0.16);
     --serious-soft:rgba(236,131,90,0.18); --critical-soft:rgba(230,103,103,0.18);
@@ -65,8 +68,14 @@
   .brand { display: flex; align-items: center; gap: 14px; }
   .brand-mark {
     display: grid; place-items: center; width: 44px; height: 44px; border-radius: 10px;
-    background: var(--accent); color: var(--accent-ink); font-family: "Archivo", sans-serif;
+    background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-green) 100%);
+    color: var(--accent-ink); font-family: "Archivo", sans-serif;
     font-weight: 800; font-size: 13px; letter-spacing: 0.02em; flex: none;
+  }
+  .topbar { position: relative; }
+  .topbar::before {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+    background: linear-gradient(90deg, var(--brand-blue) 0%, var(--brand-green) 100%);
   }
   .brand-text h1 { font-size: 21px; font-weight: 800; letter-spacing: -0.01em; }
   .brand-text p { margin: 3px 0 0; font-size: 12.5px; color: var(--text-secondary); }
@@ -127,7 +136,7 @@
   .sitemap-zone:hover { outline: 2px solid var(--text-primary); z-index: 2; filter: brightness(1.08); }
   .sitemap-zone.is-active { outline: 3px solid var(--accent); z-index: 3; }
   .sitemap-zone-badge {
-    font: 800 12px "IBM Plex Mono", monospace; color: var(--text-primary); background: rgba(255,255,255,0.88);
+    font: 800 12px "IBM Plex Mono", monospace; color: #0b0b0b; background: rgba(255,255,255,0.88);
     border-radius: 999px; padding: 1px 7px; pointer-events: none; box-shadow: 0 1px 3px rgba(0,0,0,0.25);
   }
   .legend-caption { display: block; width: 100%; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
