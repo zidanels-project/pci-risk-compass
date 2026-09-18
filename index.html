@@ -1049,23 +1049,34 @@
 
   // ============= site map =============
   var siteZoneEls = {};
-  function siteZoneColor(total, max){
-    var r = total / (max || 1);
-    if (r >= 0.66) return 'critical';
-    if (r >= 0.4) return 'serious';
-    if (r >= 0.15) return 'warning';
-    return 'good';
+  function siteZoneLevels(zones){
+    // Rank-based quartiles, not %-of-max: with a skewed distribution (one or two
+    // outlier zones far busier than the rest), %-of-max thresholds can leave a
+    // whole tier (e.g. "serious") with zero zones in it even though the legend
+    // still shows it — quartile-by-rank guarantees every tier that's in the
+    // legend actually appears on the map.
+    var keys = Object.keys(zones);
+    var sorted = keys.slice().sort(function(a, b){
+      return (zones[b].incidents + zones[b].hazards) - (zones[a].incidents + zones[a].hazards);
+    });
+    var n = sorted.length;
+    var levels = {};
+    sorted.forEach(function(key, i){
+      var frac = i / n;
+      levels[key] = frac < 0.25 ? 'critical' : frac < 0.5 ? 'serious' : frac < 0.75 ? 'warning' : 'good';
+    });
+    return levels;
   }
   function renderSiteMap(){
     var zones = DATA.site_map;
     var wrap = document.getElementById('sitemapZones');
     wrap.innerHTML = '';
     siteZoneEls = {};
-    var maxTotal = Math.max.apply(null, Object.keys(zones).map(function(k){ return zones[k].incidents + zones[k].hazards; }));
+    var levels = siteZoneLevels(zones);
     Object.keys(zones).forEach(function(key){
       var z = zones[key];
       var total = z.incidents + z.hazards;
-      var color = siteZoneColor(total, maxTotal);
+      var color = levels[key];
       var els = [];
       z.rects.forEach(function(r, ri){
         var el2 = el('div', {class:'sitemap-zone zone-'+color});
@@ -1087,8 +1098,8 @@
 
     var legend = document.getElementById('sitemapLegend');
     legend.innerHTML = '';
-    legend.appendChild(el('span', {class:'legend-caption'}, 'Combined incident + hazard-report count, relative to the busiest area:'));
-    [['good','Low (< 15% of busiest)'],['warning','Moderate (15–39%)'],['serious','High (40–65%)'],['critical','Very high (66%+)']].forEach(function(p){
+    legend.appendChild(el('span', {class:'legend-caption'}, 'Combined incident + hazard-report count, ranked against all mapped areas (quartiles):'));
+    [['good','Low (bottom quartile)'],['warning','Moderate'],['serious','High'],['critical','Very high (top quartile)']].forEach(function(p){
       var item = el('span', {class:'legend-item'});
       var dot = el('span', {class:'legend-dot'});
       dot.style.background = 'var(--'+p[0]+')';
